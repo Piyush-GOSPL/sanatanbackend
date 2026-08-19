@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Admin
+  TempleManager
+  BusinessManager
+}
+
+enum TempleStatus {
+  Pending
+  Approved
+  Delist
+  Reject
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  email         String?  @unique
+  passwordHash  String
+  role          Role     @default(Admin)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model City {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  temples Temple[]
+
+  @@map("temple_city")
+}
+
+model Deity {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  temples Temple[]
+
+  @@map("temple_deity")
+}
+
+model Temple {
+  id                 Int          @id @default(autoincrement())
+  mandir_name        String
+  status             TempleStatus @default(Pending)
+  full_address       String
+  cityId             Int          @map("city_id")
+  year_established   Int
+  mainDeityId        Int          @map("main_deity_id")
+  description        String
+  phone_no           String
+  email              String       @unique
+  website            String
+  opening_hours      String
+  service_offered    String
+  facilities_offered String
+  your_name          String
+  your_email         String
+  rating             Float        @default(0)
+  location           String
+  role               String       @default("devotee")
+
+  city      City         @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  mainDeity Deity        @relation(fields: [mainDeityId], references: [id], onDelete: Cascade)
+  images    TempleImage[]
+
+  @@map("temple_temple")
+}
+
+model Business {
+  id             BigInt   @id @default(autoincrement())
+  businessName   String
+  category       String
+  description    String
+  address        String
+  city           String
+  phone          String
+  email          String
+  website        String?
+  ownerName      String
+  ownerEmail     String
+  ownerPhone     String
+  services       String?
+  operatingHours String?
+  specialOffers  String?
+  facebookUrl    String?
+  instagramUrl   String?
+  twitterUrl     String?
+  status         String
+  approvedat     DateTime?
+  created_at     DateTime
+  reviewedat     DateTime?
+  reviewnotes    String?
+
+  @@map("business_business")
+}
+
+model TempleImage {
+  id       Int    @id @default(autoincrement())
+  templeId Int    @map("temple_id")
+  file     String
+  temple   Temple @relation(fields: [templeId], references: [id], onDelete: Cascade)
+
+  @@map("temple_templeimage")
+}
