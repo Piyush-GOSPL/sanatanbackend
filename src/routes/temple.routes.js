@@ -25,7 +25,7 @@ import {
 
 const router = Router();
 
-const uploadDir = '/tmp/uploads';
+const uploadDir = path.resolve(env.uploadDir);
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
