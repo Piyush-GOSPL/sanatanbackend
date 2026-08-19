@@ -25,22 +25,11 @@ import {
 
 const router = Router();
 
-/* =========================
-   UPLOAD DIRECTORY
-   Vercel-compatible temporary storage
-========================= */
-
 const uploadDir = '/tmp/uploads';
 
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, {
-    recursive: true,
-  });
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
-
-/* =========================
-   MULTER STORAGE
-========================= */
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -48,11 +37,9 @@ const storage = multer.diskStorage({
   },
 
   filename: (_req, file, cb) => {
-    const extension = path.extname(file.originalname);
-
-    const safeName = `${Date.now()}-${Math.round(
-      Math.random() * 1e9
-    )}${extension}`;
+    const safeName =
+      `${Date.now()}-${Math.round(Math.random() * 1e9)}` +
+      path.extname(file.originalname);
 
     cb(null, safeName);
   },
@@ -60,27 +47,15 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-
   limits: {
     files: env.maxUploadFiles,
   },
 });
 
-/* =========================
-   PUBLIC TEMPLE ROUTES
-========================= */
-
 router.get('/', listTemples);
-
 router.get('/:id', getTemple);
 
-/* =========================
-   PROTECTED TEMPLE ROUTES
-========================= */
-
 router.use(authenticate);
-
-/* CREATE TEMPLE */
 
 router.post(
   '/',
@@ -89,8 +64,6 @@ router.post(
   createTemple
 );
 
-/* UPDATE TEMPLE */
-
 router.put(
   '/:id',
   upload.array('uploaded_images', env.maxUploadFiles),
@@ -98,14 +71,7 @@ router.put(
   updateTemple
 );
 
-/* DELETE TEMPLE */
-
-router.delete(
-  '/:id',
-  deleteTemple
-);
-
-/* UPDATE TEMPLE STATUS */
+router.delete('/:id', deleteTemple);
 
 router.patch(
   '/:id/status',
