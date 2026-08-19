@@ -25,7 +25,9 @@ export const env = {
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret',
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-  uploadDir: process.env.UPLOAD_DIR || (process.env.NODE_ENV === 'production' ? '/tmp/uploads' : './uploads'),
+  uploadDir: process.env.VERCEL
+    ? '/tmp/uploads'
+    : process.env.UPLOAD_DIR || (process.env.NODE_ENV === 'production' ? '/tmp/uploads' : './uploads'),
   corsOrigin: (process.env.CORS_ORIGIN || 'http://localhost:4200,http://localhost:5173')
     .split(',')
     .map(origin => origin.trim())
