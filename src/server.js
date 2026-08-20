@@ -17,6 +17,9 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
+// Vercel proxy ke peeche hai — X-Forwarded-For header trust karo
+app.set('trust proxy', 1);
+
 /* =========================
    CORS
 ========================= */
@@ -89,13 +92,9 @@ app.get('/health', (_req, res) => {
 ========================= */
 
 app.use('/api', authRoutes);
-
 app.use('/api/city', cityRoutes);
-
 app.use('/api/deity', deityRoutes);
-
 app.use('/api/temple', templeRoutes);
-
 app.use('/api/business', businessRoutes);
 
 /* =========================
@@ -103,13 +102,9 @@ app.use('/api/business', businessRoutes);
 ========================= */
 
 app.use('/api/public/users', authRoutes);
-
 app.use('/api/public/city', cityRoutes);
-
 app.use('/api/public/deity', deityRoutes);
-
 app.use('/api/public/temple', templeRoutes);
-
 app.use('/api/public/business', businessRoutes);
 
 /* =========================
@@ -120,24 +115,28 @@ app.use(errorHandler);
 
 /* =========================
    START SERVER
+   Vercel imports this module and calls the exported app directly as a
+   request handler — it never runs app.listen(), and a module-level
+   process.exit(1) would crash the whole function on any DB hiccup.
+   Only listen on a port when running locally / on a traditional host.
 ========================= */
 
-const startServer = async () => {
-  try {
-    await prisma.$connect();
-
-    console.log('Database connected successfully');
-
-    app.listen(env.port, '0.0.0.0', () => {
-      console.log(`Server running on port ${env.port}`);
-      console.log(
-        `Business API: http://localhost:${env.port}/api/public/business`
-      );
+if (!process.env.VERCEL) {
+  prisma
+    .$connect()
+    .then(() => {
+      console.log('Database connected successfully');
+      app.listen(env.port, '0.0.0.0', () => {
+        console.log(`Server running on port ${env.port}`);
+        console.log(
+          `Business API: http://localhost:${env.port}/api/public/business`
+        );
+      });
+    })
+    .catch((error) => {
+      console.error('Failed to connect to database', error);
+      process.exit(1);
     });
-  } catch (error) {
-    console.error('Failed to connect to database', error);
-    process.exit(1);
-  }
-};
+}
 
-startServer();
+export default app;
